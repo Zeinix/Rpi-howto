@@ -1,0 +1,34 @@
+#Install batman-adv from source and remove wlan0 from network manager. Network Manager was one of the biggest hurdles from being able to control wlan0 from iw.
+
+#Install Dependancies. 4k vs 16k when origionally installed/downloaded from rockylinux.org. aarch64+4k or aarch64+16k
+uname -r #6.6.77-8.el10.altarch.aarch64+4k
+
+sudo dnf install kernel-rpi-4k-devel install kernel-rpi-16k-devel libnl3-devel kernel-devel -y
+
+git clone https://github.com/open-mesh-mirror/batman-adv.git
+
+cd batman-adv
+make -j 4
+sudo make install
+sudo modprobe batman-adv
+
+#Create or edit the /etc/NetworkManager/conf.d/wifi-hotspot.conf
+sudo nano /etc/NetworkManager/conf.d/wifi-hotspot.conf
+
+#Add to file
+[keyfile]
+unmanaged-devices=interface-name:wlan0
+
+sudo systemctl restart NetworkManager
+
+#bring wlan0 down to ediit
+sudo ip link set wlan0 down
+
+#Set wlan0 to ibss. Independent Basic Service Set, basically Ad-Hoc
+sudo iw dev wlan0 set type ibss
+#Bring wlan0 up
+
+sudo ip link set wlan0 up
+
+#Create unencrypted wireless network
+sudo iw wlan0 ibss join RPiNet 2432
