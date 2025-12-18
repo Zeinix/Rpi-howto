@@ -1,0 +1,21 @@
+#Rocky Linux 10.1 RPI Image
+
+#Edit on every node
+sudo nano /boot/efi/cmdline.txt
+#Add at end of line
+cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
+
+sudo reboot
+
+
+#Install K3s on Master Node
+curl -sfL https://get.k3s.io | sh -
+#Get node-toke used to join nodes later
+sudo cat /var/lib/rancher/k3s/server/node-token
+
+#Install K3s on Worker Nodes and join <MASTER_NODE_IP> and use <TOKEN> from above line.
+
+curl -sfL https://get.k3s.io | K3S_URL=https://<MASTER_NODE_IP>:6443 K3S_TOKEN=<TOKEN> sh -
+
+#Load Balancing
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
